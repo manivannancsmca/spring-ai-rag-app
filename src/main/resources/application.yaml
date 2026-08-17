@@ -18,8 +18,9 @@ spring:
       minimum-idle: 2
       connection-timeout: 5000
       validation-timeout: 3000
-      idle-timeout: 600000
-      max-lifetime: 1800000
+      idle-timeout: 300000        # 5 minutes (was 10 minutes)
+      max-lifetime: 600000        # 10 minutes (was 30 minutes)
+      keepalive-time: 300000      # 5 minutes (pings DB to prevent idle TCP drops)
 
   ai:
     model:
