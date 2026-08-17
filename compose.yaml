@@ -1,9 +1,59 @@
 services:
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: hr-policy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vectordb
+      POSTGRES_USER: raguser
+      POSTGRES_PASSWORD: ragpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U raguser -d vectordb"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   ollama:
-    image: 'ollama/ollama:latest'
+    image: ollama/ollama:latest
+    container_name: hr-policy-ollama
+    restart: unless-stopped
     ports:
-      - '11434'
-  qdrant:
-    image: 'qdrant/qdrant:latest'
-    ports:
-      - '6334'
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:11434/api/tags || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  ollama-model-init:
+    image: ollama/ollama:latest
+    container_name: hr-policy-ollama-model-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "ollama pull llama3 &&
+       ollama pull nomic-embed-text"
+    restart: "no"
+
+volumes:
+  postgres_data:
+  ollama_data:
