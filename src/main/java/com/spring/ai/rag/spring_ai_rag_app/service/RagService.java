@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.spring.ai.rag.spring_ai_rag_app.dto.QuestionResponse;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class RagService {
@@ -32,10 +33,10 @@ public class RagService {
                 .filterExpression("documentType == 'HR_POLICY'")
                 .build();
 
-        List<Document> retrievedDocuments =
+        List<Document> documents =
                 vectorStore.similaritySearch(searchRequest);
 
-        if (retrievedDocuments == null || retrievedDocuments.isEmpty()) {
+        if (documents == null || documents.isEmpty()) {
             return new QuestionResponse(
                     question,
                     "I could not find this information in the HR Policy.",
@@ -44,14 +45,31 @@ public class RagService {
             );
         }
 
+        String context = documents.stream()
+                .map(Document::getText)
+                .collect(Collectors.joining("\n\n---\n\n"));
+
+        String prompt = """
+                Answer the question using only the context below.
+
+                If the answer cannot be found in the context, say:
+                "I could not find this information in the HR Policy."
+
+                HR Policy Context:
+                %s
+
+                User Question:
+                %s
+                """.formatted(context, question);
+
         String answer = chatClient
                 .prompt()
-                .user(question)
+                .user(prompt)
                 .call()
                 .content();
 
         List<QuestionResponse.SourceChunk> sources =
-                retrievedDocuments.stream()
+                documents.stream()
                         .map(document -> new QuestionResponse.SourceChunk(
                                 document.getText(),
                                 document.getMetadata()
@@ -61,7 +79,7 @@ public class RagService {
         return new QuestionResponse(
                 question,
                 answer,
-                retrievedDocuments.size(),
+                documents.size(),
                 sources
         );
     }
