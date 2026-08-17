@@ -11,8 +11,8 @@
 	<groupId>com.spring.ai.rag</groupId>
 	<artifactId>spring-ai-rag-app</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>rag-demo</name>
+    <description>Spring AI RAG Demo</description>
 	<url/>
 	<licenses>
 		<license/>
