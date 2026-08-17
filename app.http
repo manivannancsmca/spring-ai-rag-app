@@ -1,0 +1,19 @@
+### Base URL
+@host=http://localhost:8080/api/v1/rag/ask
+
+
+POST {{host}}
+Content-Type: application/json
+
+{
+  "question": "How many days per week can employees work remotely?"
+}
+
+###
+
+POST {{host}}
+Content-Type: application/json
+
+{
+  "question": "How many annual leave days does a full-time employee receive?"
+}
