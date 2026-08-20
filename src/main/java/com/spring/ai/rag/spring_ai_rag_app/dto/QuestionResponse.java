@@ -8,7 +8,6 @@ public record QuestionResponse(
         int retrievedChunks,
         List<SourceChunk> sources
 ) {
-
     public record SourceChunk(
             String content,
             Object metadata
